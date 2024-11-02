@@ -38,8 +38,8 @@ describe('FetchHttpRequest', () => {
         });
     });
 
-    describe('unIncludeCredentials', () => {
-        it("Should not call fetch with credentials option after unset uninclude credentials", async () => {
+    describe('notIncludeCredentials', () => {
+        it("Should not call fetch with credentials option after not include credentials", async () => {
             (globalThis.fetch as jest.Mock).mockResolvedValue({
                 ok: true,
                 status: 200,
@@ -48,7 +48,7 @@ describe('FetchHttpRequest', () => {
 
             const fetchHttpRequest = new FetchHttpRequest();
             fetchHttpRequest.includeCredentials();
-            fetchHttpRequest.unincludeCredentials();
+            fetchHttpRequest.notIncludeCredentials();
 
             // Act
             await fetchHttpRequest.get({ url });
@@ -556,7 +556,7 @@ describe('FetchHttpRequest', () => {
                 });
 
                 const fetchHttpRequest = new FetchHttpRequest();
-                fetchHttpRequest.setCustomErrorStatusHandling((status: number, body?: unknown): HttpException => {
+                fetchHttpRequest.setCustomErrorStatusHandling((): HttpException => {
                     return { type: customStatus, body: customBody };
                 });
 
@@ -1115,7 +1115,7 @@ describe('FetchHttpRequest', () => {
                 });
 
                 const fetchHttpRequest = new FetchHttpRequest();
-                fetchHttpRequest.setCustomErrorStatusHandling((status: number, body?: unknown): HttpException => {
+                fetchHttpRequest.setCustomErrorStatusHandling((): HttpException => {
                     return { type: customStatus, body: customBody };
                 });
 
@@ -1674,7 +1674,7 @@ describe('FetchHttpRequest', () => {
                 });
 
                 const fetchHttpRequest = new FetchHttpRequest();
-                fetchHttpRequest.setCustomErrorStatusHandling((status: number, body?: unknown): HttpException => {
+                fetchHttpRequest.setCustomErrorStatusHandling((): HttpException => {
                     return { type: customStatus, body: customBody };
                 });
 
@@ -2233,7 +2233,7 @@ describe('FetchHttpRequest', () => {
                 });
 
                 const fetchHttpRequest = new FetchHttpRequest();
-                fetchHttpRequest.setCustomErrorStatusHandling((status: number, body?: unknown): HttpException => {
+                fetchHttpRequest.setCustomErrorStatusHandling((): HttpException => {
                     return { type: customStatus, body: customBody };
                 });
 
@@ -2755,7 +2755,7 @@ describe('FetchHttpRequest', () => {
                 });
 
                 const fetchHttpRequest = new FetchHttpRequest();
-                fetchHttpRequest.setCustomErrorStatusHandling((status: number, body?: unknown): HttpException => {
+                fetchHttpRequest.setCustomErrorStatusHandling((): HttpException => {
                     return { type: customStatus, body: customBody };
                 });
 

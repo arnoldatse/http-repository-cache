@@ -66,7 +66,7 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
    * ensuring that credentials such as cookies or authorization headers
    * are not sent with the request.
    */
-  unincludeCredentials(): void {
+  notIncludeCredentials(): void {
     this._includeCredentials = false;
   }
 
@@ -81,7 +81,7 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
   }
 
   /**
-   * Unsets the custom error status handling by setting it to null.
+   * Unset the custom error status handling by setting it to null.
    * This method is used to remove any previously set custom error status handling logic.
    */
   unsetCustomErrorStatusHandling(): void {

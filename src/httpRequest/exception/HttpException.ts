@@ -1,4 +1,4 @@
-import DefaultHttpExceptionTypes from "./DefaultHttpExceptionType";
+import DefaultHttpExceptionType from "./DefaultHttpExceptionType";
 
 /**
  * Represents an HTTP exception.
@@ -7,6 +7,6 @@ import DefaultHttpExceptionTypes from "./DefaultHttpExceptionType";
  * @template B - The type of the body of the exception.
  */
 export default interface HttpException<T = unknown, B = unknown> {
-    type: DefaultHttpExceptionTypes | T;
+    type: DefaultHttpExceptionType | T;
     body?: B;
 }
