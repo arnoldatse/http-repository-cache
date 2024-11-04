@@ -18,6 +18,14 @@ export interface HttpRequestParams<T = unknown, O = unknown> {
  */
 export default interface HttpRequestAdapter<O = unknown> {
     /**
+     * Builds the request header.
+     * 
+     * @param httpRequestParams - The parameters for the HTTP request.
+     * @returns The request header.
+     */
+    buildRequestHeader(httpRequestParams: HttpRequestParams<unknown, O>): Record<string, string>;
+
+    /**
      * Sends a GET request.
      * 
      * @template R - The type of the response.

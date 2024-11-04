@@ -1,6 +1,7 @@
 import DefaultHttpExceptionType from "../exception/DefaultHttpExceptionType";
 import HttpException from "../exception/HttpException";
-import FetchHttpRequest from "./FetchHttpRequest";
+import { HttpRequestParams } from "../HttpRequestAdapter";
+import FetchHttpRequest, { FetchRequestOptions } from "./FetchHttpRequest";
 
 describe('FetchHttpRequest', () => {
     const url = "http://localhost:3000";
@@ -80,6 +81,52 @@ describe('FetchHttpRequest', () => {
 
             // Act
             await expect(fetchHttpRequest.get({ url })).rejects.toMatchObject({ type: DefaultHttpExceptionType.UNKNOWN_ERROR, body });
+        });
+    });
+
+    describe('buildRequestHeader', () => {
+        let defaultHttpRequestParams: HttpRequestParams<unknown, FetchRequestOptions> = {
+            url,
+            headers: {
+                accept: '*/*',
+                "user-agent": 'Jest'
+            },
+        };
+
+        let fetchHttpRequest: FetchHttpRequest;
+        beforeEach(() => {
+            fetchHttpRequest = new FetchHttpRequest();
+        });
+
+        it("Should only contain custom defined header", () => {
+            // Act
+            const result = fetchHttpRequest.buildRequestHeader({ ...defaultHttpRequestParams, contentTypeJSON: false });
+
+            // Assert
+            expect(result).toEqual(defaultHttpRequestParams.headers);
+        });
+        it("Should contain custom defined header with only content type header property", () => {
+            // Act
+            const result = fetchHttpRequest.buildRequestHeader({ ...defaultHttpRequestParams });
+
+            // Assert
+            expect(result).toEqual({ ...defaultHttpRequestParams.headers, "Content-Type": "application/json" });
+        });
+        it("Should contain custom defined header with only authorization header property", () => {
+            fetchHttpRequest.setAuthToken(token);
+            // Act
+            const result = fetchHttpRequest.buildRequestHeader({ ...defaultHttpRequestParams, contentTypeJSON: false });
+
+            // Assert
+            expect(result).toEqual({ ...defaultHttpRequestParams.headers, Authorization: `Bearer ${token}` });
+        });
+        it("Should contain custom defined header with content type header and authorization header properties", () => {
+            fetchHttpRequest.setAuthToken(token);
+            // Act
+            const result = fetchHttpRequest.buildRequestHeader({ ...defaultHttpRequestParams });
+
+            // Assert
+            expect(result).toEqual({ ...defaultHttpRequestParams.headers, "Content-Type": "application/json", Authorization: `Bearer ${token}` });
         });
     });
 

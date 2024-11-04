@@ -111,6 +111,16 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
   }
 
   /**
+   * Builds the request headers for an HTTP request.
+   *
+   * @param httpRequestParams - The parameters for the HTTP request, including headers and content type options.
+   * @returns The constructed headers for the HTTP request.
+   */
+  buildRequestHeader(httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>) {
+    return this.getHeaders(httpRequestParams.headers, httpRequestParams.contentTypeJSON ?? true);
+  }
+
+  /**
    * Constructs and returns the headers for an HTTP request.
    *
    * @param headers - Optional additional headers to include in the request.
@@ -254,7 +264,7 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
   private fetch<R>(httpMethod: HttpMethod, httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>): Promise<R> {
     return fetch(httpRequestParams.url, {
       method: httpMethod,
-      headers: this.getHeaders(httpRequestParams.headers, httpRequestParams.contentTypeJSON ?? true),
+      headers: this.buildRequestHeader(httpRequestParams),
       ...(!!httpRequestParams.body && { body: JSON.stringify(httpRequestParams.body) }),
       ...(this._includeCredentials && { credentials: "include" }),
       ...httpRequestParams.options
