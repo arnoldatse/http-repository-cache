@@ -1,5 +1,4 @@
 import DefaultHttpExceptionType from "../httpRequest/exception/DefaultHttpExceptionType";
-import FetchHttpRequest, { FetchRequestOptions } from "../httpRequest/fetch/FetchHttpRequest";
 import HttpMethod from "../httpRequest/HttpMethod";
 import HttpRequestAdapter, { HttpRequestParams } from "../httpRequest/HttpRequestAdapter";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -51,18 +50,13 @@ export default class RepositoryCache<O = unknown> {
   private _cacheValidity: number;
 
   /**
-   * HttpRequestAdapter instance to make http requests
-   */
-  private httpRequest: HttpRequestAdapter<O | FetchRequestOptions> = new FetchHttpRequest();
-
-  /**
    *
    * @param httpRequest  HttpRequestAdapter instance to make http requests
    * @param idKey The key to identify the occurrence in the response data
    * @param eternalCache True if cache never expire, false otherwise
    * @param cacheValidity Cache validity in seconds
    */
-  constructor(private idKey: string, private eternalCache = false, cacheValidity = 60) {
+  constructor(private httpRequest: HttpRequestAdapter<O>, private idKey: string, private eternalCache = false, cacheValidity = 60) {
     this._cacheValidity = cacheValidity;
   }
 
@@ -115,16 +109,16 @@ export default class RepositoryCache<O = unknown> {
 
 
   /**
-   * Clears the occurrence cache for a specific ID and sub-property response occurrence.
+   * Clears the occurrence cache for a specific ID.
    *
    * @param id - The ID of the occurrence to clear from the cache. Can be a string or a number.
-   * @param subPropertyResponseOccurrence - An array of strings representing the sub-properties response occurrences to check.
+   * @param subPropertyResponseOccurrence - An optional array of string sub-properties response occurrences to consider when clearing the cache.
    */
-  clearOccurrenceCache(id: string | number, subPropertyResponseOccurrence: string[]) {
+  clearOccurrenceCache(id: string | number, subPropertyResponseOccurrence?: string[]) {
     Object.keys(this.cache).map((cacheKey) => {
       const cache = this.cache[cacheKey];
       if (cache?.requestType === RequestType.OCCURRENCE) {
-        const data = this.getOccurrenceFromResponse(cache.data, subPropertyResponseOccurrence);
+        const data = this.getOccurrenceFromResponse(cache.data, subPropertyResponseOccurrence ?? []);
         if (data[this.idKey] === id) {
           delete this.cache[cacheKey];
         }
@@ -561,7 +555,7 @@ export default class RepositoryCache<O = unknown> {
       if (clearOccurrenceCache && occurrenceId) {
         this.clearOccurrenceCache(occurrenceId, subPropertyResponseOccurrence);
       }
-      
+
       return response;
     });
   }

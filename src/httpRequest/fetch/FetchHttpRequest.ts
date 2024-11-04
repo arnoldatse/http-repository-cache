@@ -5,6 +5,14 @@ import HttpRequestAdapter, { HttpRequestParams } from "../HttpRequestAdapter";
 
 export interface FetchRequestOptions extends Omit<RequestInit, "method" | "headers" | "body"> { }
 
+/**
+ * A class that implements the `HttpRequestAdapter` interface using the Fetch API.
+ * This class provides methods for making HTTP requests with various HTTP methods
+ * (GET, POST, PATCH, PUT, DELETE) and includes support for authentication tokens,
+ * custom error handling, and credentials.
+ *
+ * @template T - The type of the response custom http exception type. Defaults to `unknown`.
+ */
 export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter<FetchRequestOptions> {
   /**
    * The authentication token used for making HTTP requests.
