@@ -1,29 +1,249 @@
-describe('RepositoryCache', () => {
-    beforeEach(() => {
+import FetchHttpRequest from "../httpRequest/fetch/FetchHttpRequest";
+import HttpMethod from "../httpRequest/HttpMethod";
+import RepositoryCache from "./RepositoryCache";
 
-    })
+const defaulBasetUrl = 'http://localhost:3000';
+const defaultId = 5;
+const listUrl = `${defaulBasetUrl}/list`;
+const getUrl = `${defaulBasetUrl}/get/${defaultId}`;
+const defaultResponseData = { id: defaultId, data: 'data' };
+
+jest.useFakeTimers();
+describe('RepositoryCache', () => {
+    let fetchHttpRequest: FetchHttpRequest;
+
+    beforeEach(() => {
+        fetchHttpRequest = new FetchHttpRequest();
+    });
+
+    afterEach(() => {
+        jest.resetAllMocks();
+    });
 
     describe("setHttpRequest", () => {
         it('should set http request', () => {
+            const firstHttpRequest = new FetchHttpRequest();
+            const secondHttpRequest = new FetchHttpRequest();
 
+            const spyFirstHttpReauestGet = jest.spyOn(firstHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const spySecondHttpRequestGet = jest.spyOn(secondHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+
+            const repositoryCache = new RepositoryCache(firstHttpRequest, 'id');
+            repositoryCache.setHttpRequest(secondHttpRequest);
+
+            repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            expect(spyFirstHttpReauestGet).not.toHaveBeenCalled();
+            expect(spySecondHttpRequestGet).toHaveBeenCalledTimes(1);
         });
     });
 
     describe("clearCache", () => {
-        it('should clear the entire cache', () => {
+        it('should clear the entire cache even when cache has lifetime', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id');
 
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            //advance time to 30s
+            jest.advanceTimersByTime(30000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearCache();
+
+            //After clearCache, should call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(4)
+        });
+
+        it('should clear the entire cache even when cache are eternal', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            jest.advanceTimersByTime(120000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearCache();
+
+            //After clearCache, should call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(4)
+        });
+    });
+
+    describe("clearListsCache", () => {
+        it('should clear only lists cache even when they has lifetime', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id');
+
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            //advance time to 30s
+            jest.advanceTimersByTime(30000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearListsCache();
+
+            //After clearListsCache, should call fetchHttpRequest get method for list request
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            //should not call fetchHttpRequest get method for occurrence requests
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+        });
+
+        it('should clear only lists cache even when cache are eternal', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            jest.advanceTimersByTime(120000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearListsCache();
+
+            //After clearListsCache, should call fetchHttpRequest get method for list request
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            //should not call fetchHttpRequest get method for occurrence requests
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
         });
     });
 
     describe("clearOccurrenceCache", () => {
-        it('should remove from cache a specific occurrence request', () => {
+        it('should clear only occurrence cache even when they has lifetime', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id');
 
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            //advance time to 30s
+            jest.advanceTimersByTime(30000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearOccurrenceCache(defaultId);
+
+            //After clearOccurrenceCache, should call fetchHttpRequest get method for occurrence request
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            
+            //should not call fetchHttpRequest get method for list requests
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+        });
+        it('should clear only occurrence cache even when they are eternal', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(defaultResponseData);
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            jest.advanceTimersByTime(120000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearOccurrenceCache(defaultId);
+
+            //After clearOccurrenceCache, should call fetchHttpRequest get method for occurrence request
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            
+            //should not call fetchHttpRequest get method for list requests
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+        });
+
+        it('should clear occurrence when get response has item in sub property', async () => {
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            jest.advanceTimersByTime(120000);
+
+            //should not call fetchHttpRequest get method
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+
+            await repositoryCache.clearOccurrenceCache(defaultId, ['property', 'subProperty']);
+
+            //After clearOccurrenceCache, should call fetchHttpRequest get method for occurrence request
+            await repositoryCache.get(HttpMethod.GET, { url: getUrl });
+            
+            //should not call fetchHttpRequest get method for list requests
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+            await repositoryCache.getList(HttpMethod.GET, { url: listUrl });
+
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
         });
     });
 
     describe("getList", () => {
-        it('should do http request with good method and params', () => {
+        describe('should do http request with good method and HttpRequestParams', () => {
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it('should return the response http request did', () => {
@@ -44,8 +264,26 @@ describe('RepositoryCache', () => {
     });
 
     describe("get", () => {
-        it('should do http request with good method and params', () => {
+        it('should do http request with good method and HttpRequestParams', () => {
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it('should return the response http request did', () => {
@@ -151,7 +389,25 @@ describe('RepositoryCache', () => {
 
     describe("create", () => {
         it("should do http request with good method and params", () => {
+            describe("should do htttp request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it("should return the response http request did", () => {
@@ -162,8 +418,26 @@ describe('RepositoryCache', () => {
     });
 
     describe("update", () => {
-        it("should do http request with good method and params", () => {
+        it("should do http request with good method and HttpRequestParams", () => {
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it("should return the response http request did", () => {
@@ -176,8 +450,26 @@ describe('RepositoryCache', () => {
     });
 
     describe("request", () => {
-        it("should do http request with good method and params", () => {
+        it("should do http request with good method and HttpRequestParams", () => {
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it("should return the response http request did", () => {
@@ -207,19 +499,37 @@ describe('RepositoryCache', () => {
     });
 
     describe("requestCached", () => {
-        it("should do http request with good method and params", () => {
+        it("should do http request with good method and HttpRequestParams", () => {
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
 
+                });
+                it('should do http request with POST method', () => {
+
+                });
+                it('should do http request with PATCH method', () => {
+
+                });
+                it('should do http request with PUT method', () => {
+
+                });
+                it('should do http request with DELETE method', () => {
+
+                });
+            });
+            it("should do http request with good HttpRequestParams", () => {
+            });
         });
 
         it("should return the response http request did", () => {
 
         });
 
-        it("should cache request list type", ()=>{
+        it("should cache request list type", () => {
 
         });
 
-        it("should cache request occurrence type", ()=>{
+        it("should cache request occurrence type", () => {
 
         });
 
