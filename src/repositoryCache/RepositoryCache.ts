@@ -72,7 +72,7 @@ export default class RepositoryCache<O = unknown> {
   private createRequestSignature<B>(method: HttpMethod, httpRequestParams: HttpRequestParams<B, O>): RequestSignature<B> {
     const requestHeader = this.httpRequest.buildRequestHeader(httpRequestParams);
     return {
-      method: method,
+      method,
       ...(httpRequestParams.body && { body: httpRequestParams.body }),
       ...(Object.keys(requestHeader).length > 0 && { headers: requestHeader })
     }
