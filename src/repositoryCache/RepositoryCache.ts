@@ -128,6 +128,22 @@ export default class RepositoryCache<O = unknown> {
   }
 
   /**
+   * If response has sub properties, get the occurrence from nested property that has data occurrence in the response
+   * @param response
+   * @param subPropertyResponseOccurrence
+   * @returns
+   */
+  private getOccurrenceFromResponse(response: unknown, subPropertyResponseOccurrence: string[]): OccurrenceDataCacheSignature {
+    let occurrence = response as Record<string, unknown> | OccurrenceDataCacheSignature;
+    if (subPropertyResponseOccurrence) {
+      subPropertyResponseOccurrence.forEach((subProperty) => {
+        occurrence = occurrence[subProperty] as Record<string, unknown> | OccurrenceDataCacheSignature;
+      });
+    }
+    return occurrence;
+  }
+
+  /**
    * If response has sub properties, get the list from nested property that has data list in the response
    * @param response
    * @param subPropertyResponseList
@@ -143,22 +159,6 @@ export default class RepositoryCache<O = unknown> {
       });
     }
     return list;
-  }
-
-  /**
-   * If response has sub properties, get the occurrence from nested property that has data occurrence in the response
-   * @param response
-   * @param subPropertyResponseOccurrence
-   * @returns
-   */
-  private getOccurrenceFromResponse(response: unknown, subPropertyResponseOccurrence: string[]): OccurrenceDataCacheSignature {
-    let occurrence = response as Record<string, unknown> | OccurrenceDataCacheSignature;
-    if (subPropertyResponseOccurrence) {
-      subPropertyResponseOccurrence.forEach((subProperty) => {
-        occurrence = occurrence[subProperty] as Record<string, unknown> | OccurrenceDataCacheSignature;
-      });
-    }
-    return occurrence;
   }
 
   /**
@@ -178,8 +178,16 @@ export default class RepositoryCache<O = unknown> {
 
     Object.values(this.cache).some(cache => {
       let cacheData: DataCacheSignature;
-      if (cache.requestType === RequestType.LIST) {
+
+      if (cache.requestType === RequestType.OCCURRENCE) {
+        cacheData = this.getOccurrenceFromResponse(cache.data, subPropertyResponseOccurrence!);
+        if (cacheData[key] === value) {
+          data = cacheData as T;
+        }
+      }
+      else if (cache.requestType === RequestType.LIST) {
         cacheData = this.getListFromResponse(cache.data, subPropertyResponseList);
+
         if (Array.isArray(cacheData)) {
           return cacheData.find((item) => {
             if (item[key] === value) {
@@ -190,15 +198,8 @@ export default class RepositoryCache<O = unknown> {
           })
         }
       }
-      if (cache.requestType === RequestType.OCCURRENCE) {
-        cacheData = this.getOccurrenceFromResponse(cache.data, subPropertyResponseOccurrence!);
-        if (cacheData[key] === value) {
-          data = cacheData as T;
-          return true;
-        }
-      }
 
-      return false;
+      return data;
     })
 
     return data;
