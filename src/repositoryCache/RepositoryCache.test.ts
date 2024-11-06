@@ -228,6 +228,161 @@ describe('RepositoryCache', () => {
         });
     });
 
+    describe("doHttpRequest", () => {
+        describe('should do http request with good method and HttpRequestParams', () => {
+            let spyFetchHttpRequestGet: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPost: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPatch: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPut: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestDelete: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+
+            beforeEach(() => {
+                spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPost = jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPatch = jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPut = jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestDelete = jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+            });
+
+            afterEach(() => {
+                jest.resetAllMocks();
+            });
+            describe("should do http request with good methods", () => {
+                it('should do http request with GET method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.doHttpRequest(HttpMethod.GET, { url: listUrl });
+
+                    expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
+                });
+                it('should do http request with POST method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.doHttpRequest(HttpMethod.POST, { url: listUrl });
+
+                    expect(spyFetchHttpRequestPost).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
+                });
+                it('should do http request with PATCH method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.doHttpRequest(HttpMethod.PATCH, { url: listUrl });
+
+                    expect(spyFetchHttpRequestPatch).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
+                });
+                it('should do http request with PUT method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.doHttpRequest(HttpMethod.PUT, { url: listUrl });
+
+                    expect(spyFetchHttpRequestPut).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
+                });
+                it('should do http request with DELETE method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.doHttpRequest(HttpMethod.DELETE, { url: listUrl });
+
+                    expect(spyFetchHttpRequestDelete).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                });
+            });
+            describe("should do http request with good HttpRequestParams", () => {
+                const httpRequestParams: HttpRequestParams<never, FetchRequestOptions> = {
+                    url: listUrl,
+                    headers: { accept: '*/*', "user-agent": 'Jest' },
+                    contentTypeJSON: true,
+                    successStatusCodes: [206, 207, 208]
+                };
+                it("should do GET http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.doHttpRequest(HttpMethod.GET, httpRequestParams);
+
+                    expect(fetchHttpRequest.get).toHaveBeenCalledWith(httpRequestParams);
+                });
+                it("should do POST http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.doHttpRequest(HttpMethod.POST, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.post).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PATCH http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.doHttpRequest(HttpMethod.PATCH, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.patch).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PUT http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.doHttpRequest(HttpMethod.PUT, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.put).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do DELETE http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.doHttpRequest(HttpMethod.DELETE, httpRequestParams);
+
+                    expect(fetchHttpRequest.delete).toHaveBeenCalledWith(httpRequestParams);
+                });
+            });
+        });
+
+        describe('should return the response http request did', () => {
+            const resolvedValue = { property: { subProperty: defaultResponseData } };
+
+            it('should return the response http request did with GET method', async () => {
+                jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.doHttpRequest(HttpMethod.GET, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with POST method', async () => {
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.doHttpRequest(HttpMethod.POST, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PATCH method', async () => {
+                jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.doHttpRequest(HttpMethod.PATCH, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PUT method', async () => {
+                jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.doHttpRequest(HttpMethod.PUT, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with DELETE method', async () => {
+                jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.doHttpRequest(HttpMethod.DELETE, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+        });
+    });
+
     describe("getList", () => {
         describe('should do http request with good method and HttpRequestParams', () => {
             let spyFetchHttpRequestGet: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
@@ -5091,74 +5246,409 @@ describe('RepositoryCache', () => {
     });
 
     describe("create", () => {
-        describe("should do http request with good method and params", () => {
+        describe('should do http request with good method and HttpRequestParams', () => {
+            let spyFetchHttpRequestGet: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPost: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPatch: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPut: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestDelete: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+
+            beforeEach(() => {
+                spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPost = jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPatch = jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPut = jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestDelete = jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+            });
+
+            afterEach(() => {
+                jest.resetAllMocks();
+            });
             describe("should do http request with good methods", () => {
                 it('should do http request with GET method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.create(HttpMethod.GET, { url: listUrl });
 
+                    expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with POST method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.create(HttpMethod.POST, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPost).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with PATCH method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.create(HttpMethod.PATCH, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPatch).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with PUT method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.create(HttpMethod.PUT, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPut).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with DELETE method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.create(HttpMethod.DELETE, { url: listUrl });
 
+                    expect(spyFetchHttpRequestDelete).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
                 });
             });
             describe("should do http request with good HttpRequestParams", () => {
-                it("should do GET http request with good HttpRequestParams", async () => { });
-                it("should do POST http request with good HttpRequestParams", async () => { });
-                it("should do PATCH http request with good HttpRequestParams", async () => { });
-                it("should do PUT http request with good HttpRequestParams", async () => { });
-                it("should do DELETE http request with good HttpRequestParams", async () => { });
+                const httpRequestParams: HttpRequestParams<never, FetchRequestOptions> = {
+                    url: listUrl,
+                    headers: { accept: '*/*', "user-agent": 'Jest' },
+                    contentTypeJSON: true,
+                    successStatusCodes: [206, 207, 208]
+                };
+                it("should do GET http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.create(HttpMethod.GET, httpRequestParams);
+
+                    expect(fetchHttpRequest.get).toHaveBeenCalledWith(httpRequestParams);
+                });
+                it("should do POST http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.create(HttpMethod.POST, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.post).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PATCH http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.create(HttpMethod.PATCH, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.patch).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PUT http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.create(HttpMethod.PUT, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.put).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do DELETE http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.create(HttpMethod.DELETE, httpRequestParams);
+
+                    expect(fetchHttpRequest.delete).toHaveBeenCalledWith(httpRequestParams);
+                });
             });
         });
 
-        describe("should return the response http request did", () => {
+        describe('should return the response http request did', () => {
+            const resolvedValue = { property: { subProperty: defaultResponseData } };
 
+            it('should return the response http request did with GET method', async () => {
+                jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.create(HttpMethod.GET, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with POST method', async () => {
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.create(HttpMethod.POST, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PATCH method', async () => {
+                jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.create(HttpMethod.PATCH, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PUT method', async () => {
+                jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.create(HttpMethod.PUT, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with DELETE method', async () => {
+                jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.create(HttpMethod.DELETE, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
         });
 
-        it("should lists cache type been cleared", () => { });
+        it("should lists cache type been cleared", async () => {
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue([defaultResponseData]);
+            await repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/users?page=2` });
+
+            await repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/users?page=3` });
+
+            jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ message: 'success' });
+            await repositoryCache.create(HttpMethod.POST, { url: defaultBaseUrl });
+
+            await repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/users?page=2` });
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+        });
     });
 
     describe("update", () => {
-        describe("should do http request with good method and HttpRequestParams", () => {
+        describe('should do http request with good method and HttpRequestParams', () => {
+            let spyFetchHttpRequestGet: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPost: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPatch: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestPut: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<unknown, FetchRequestOptions>], any>;
+            let spyFetchHttpRequestDelete: jest.SpyInstance<Promise<unknown>, [httpRequestParams: HttpRequestParams<never, FetchRequestOptions>], any>;
+
+            beforeEach(() => {
+                spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPost = jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPatch = jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestPut = jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+                spyFetchHttpRequestDelete = jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue({ property: { subProperty: defaultResponseData } });
+            });
+
+            afterEach(() => {
+                jest.resetAllMocks();
+            });
             describe("should do http request with good methods", () => {
                 it('should do http request with GET method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.update(defaultId, HttpMethod.GET, { url: listUrl });
 
+                    expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with POST method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.update(defaultId, HttpMethod.POST, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPost).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with PATCH method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.update(defaultId, HttpMethod.PATCH, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPatch).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with PUT method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.update(defaultId, HttpMethod.PUT, { url: listUrl });
 
+                    expect(spyFetchHttpRequestPut).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestDelete).not.toHaveBeenCalled();
                 });
                 it('should do http request with DELETE method', () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    repositoryCache.update(defaultId, HttpMethod.DELETE, { url: listUrl });
 
+                    expect(spyFetchHttpRequestDelete).toHaveBeenCalledTimes(1);
+                    expect(spyFetchHttpRequestGet).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPost).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPatch).not.toHaveBeenCalled();
+                    expect(spyFetchHttpRequestPut).not.toHaveBeenCalled();
                 });
             });
             describe("should do http request with good HttpRequestParams", () => {
-                it("should do GET http request with good HttpRequestParams", async () => { });
-                it("should do POST http request with good HttpRequestParams", async () => { });
-                it("should do PATCH http request with good HttpRequestParams", async () => { });
-                it("should do PUT http request with good HttpRequestParams", async () => { });
-                it("should do DELETE http request with good HttpRequestParams", async () => { });
+                const httpRequestParams: HttpRequestParams<never, FetchRequestOptions> = {
+                    url: listUrl,
+                    headers: { accept: '*/*', "user-agent": 'Jest' },
+                    contentTypeJSON: true,
+                    successStatusCodes: [206, 207, 208]
+                };
+                it("should do GET http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.update(defaultId, HttpMethod.GET, httpRequestParams);
+
+                    expect(fetchHttpRequest.get).toHaveBeenCalledWith(httpRequestParams);
+                });
+                it("should do POST http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.update(defaultId, HttpMethod.POST, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.post).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PATCH http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.update(defaultId, HttpMethod.PATCH, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.patch).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do PUT http request with good HttpRequestParams", async () => {
+                    const body = { id: 5, data: 'data' };
+                    const customHttpRequestParams = { ...httpRequestParams, body };
+
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.update(defaultId, HttpMethod.PUT, customHttpRequestParams);
+
+                    expect(fetchHttpRequest.put).toHaveBeenCalledWith(customHttpRequestParams);
+                });
+                it("should do DELETE http request with good HttpRequestParams", async () => {
+                    const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                    await repositoryCache.update(defaultId, HttpMethod.DELETE, httpRequestParams);
+
+                    expect(fetchHttpRequest.delete).toHaveBeenCalledWith(httpRequestParams);
+                });
             });
         });
 
-        describe("should return the response http request did", () => {
+        describe('should return the response http request did', () => {
+            const resolvedValue = { property: { subProperty: defaultResponseData } };
 
+            it('should return the response http request did with GET method', async () => {
+                jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.update(defaultId, HttpMethod.GET, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with POST method', async () => {
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.update(defaultId, HttpMethod.POST, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PATCH method', async () => {
+                jest.spyOn(fetchHttpRequest, 'patch').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.update(defaultId, HttpMethod.PATCH, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with PUT method', async () => {
+                jest.spyOn(fetchHttpRequest, 'put').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.update(defaultId, HttpMethod.PUT, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
+
+            it('should return the response http request did with DELETE method', async () => {
+                jest.spyOn(fetchHttpRequest, 'delete').mockResolvedValue(resolvedValue);
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+                expect(repositoryCache.update(defaultId, HttpMethod.DELETE, { url: listUrl })).resolves.toEqual(resolvedValue);
+            });
         });
 
-        it("should lists cache type been cleared", () => { });
+        it("should lists cache type been cleared", () => {
+            const goodData = { id: defaultId, name: 'data' }
+            const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
 
-        it("should occurrence cache type related to id been cleared", () => { });
+            //First list request
+            const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue([goodData]);
+            repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/users` });
+
+            //Second list request
+            spyFetchHttpRequestGet.mockResolvedValue([defaultResponseData]);
+            repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/roles` });
+
+            jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ message: 'success' });
+            repositoryCache.update(goodData.id, HttpMethod.POST, { url: defaultBaseUrl });
+
+            repositoryCache.getList(HttpMethod.GET, { url: `${listUrl}/users` });
+            expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+        });
+
+        describe('should occurrence cache type related to id been cleared', () => {
+            const goodData = { id: defaultId, name: 'data' };
+            const getGoodUserUrl = `${listUrl}/user/${goodData.id}`;
+            const getRandomUserUrl = `${listUrl}/user/1`;
+
+            it("with get query response data at root level", () => {
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+                //First list request
+                const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue(goodData);
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+
+                //Second list request
+                spyFetchHttpRequestGet.mockResolvedValue(defaultResponseData);
+                repositoryCache.get(HttpMethod.GET, { url: getRandomUserUrl });
+
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ message: 'success' });
+                repositoryCache.update(goodData.id, HttpMethod.POST, { url: defaultBaseUrl });
+
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+                expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+            });
+
+            it("with get query response data nested at level 1", () => {
+                const goodData = { id: defaultId, name: 'data' }
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+                //First list request
+                const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ data: goodData });
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+
+                //Second list request
+                spyFetchHttpRequestGet.mockResolvedValue({ data: defaultResponseData });
+                repositoryCache.get(HttpMethod.GET, { url: getRandomUserUrl });
+
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ message: 'success' });
+                repositoryCache.update(goodData.id, HttpMethod.POST, { url: defaultBaseUrl }, ['data']);
+
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+                expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+            });
+
+            it("with get query response data nested at level 5", () => {
+                const goodData = { id: defaultId, name: 'data' }
+                const repositoryCache = new RepositoryCache(fetchHttpRequest, 'id', true);
+
+                //First list request
+                const spyFetchHttpRequestGet = jest.spyOn(fetchHttpRequest, 'get').mockResolvedValue({ response: { resource: { content: { data: { object: goodData } } } } });
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+
+                //Second list request
+                spyFetchHttpRequestGet.mockResolvedValue({ response: { resource: { content: { data: { object: defaultResponseData } } } } });
+                repositoryCache.get(HttpMethod.GET, { url: getRandomUserUrl });
+
+                jest.spyOn(fetchHttpRequest, 'post').mockResolvedValue({ message: 'success' });
+                repositoryCache.update(goodData.id, HttpMethod.POST, { url: defaultBaseUrl }, ['response', 'resource', 'content', 'data', 'object']);
+
+                repositoryCache.get(HttpMethod.GET, { url: getGoodUserUrl });
+                expect(spyFetchHttpRequestGet).toHaveBeenCalledTimes(3);
+            });
+        })
+
     });
 });
