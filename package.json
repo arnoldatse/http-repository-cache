@@ -17,10 +17,13 @@
     "api",
     "repository",
     "pattern",
-    "cache"
+    "cache",
+    "repository-pattern",
+    "http-requests",
+    "fetch-api"
   ],
   "author": "Arnold Atsé <arnoldatse.dev> (https://arnoldatse.dev)",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-typescript": "^7.26.0",
