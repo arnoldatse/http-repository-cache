@@ -247,7 +247,8 @@ export default class RepositoryCache<O = unknown> {
   private removeAllExpiredCache() {
     if (!this.eternalCache) {
       Object.keys(this.cache).forEach((key) => {
-        if (this.cache[key] && this.isCacheExpired(this.cache[key])) {
+        const cache = this.cache[key];
+        if (cache && this.isCacheExpired(cache)) {
           delete this.cache[key];
         }
       });
@@ -323,7 +324,7 @@ export default class RepositoryCache<O = unknown> {
    * @returns
    */
   getList<R, B = void>(method: HttpMethod, httpRequestParams: HttpRequestParams<B, O>): Promise<R> {
-    return this.requestWithCache<R, B>(this.doCachedHttpRequest.bind(this)<R, B>, method, httpRequestParams, RequestType.LIST);
+    return this.requestWithCache<R, B>(this.doCachedHttpRequest.bind(this), method, httpRequestParams, RequestType.LIST);
   }
 
   /**
@@ -337,7 +338,7 @@ export default class RepositoryCache<O = unknown> {
    * @returns
    */
   get<R, B = void>(method: HttpMethod, httpRequestParams: HttpRequestParams<B, O>): Promise<R> {
-    return this.requestWithCache<R, B>(this.doCachedHttpRequest.bind(this)<R, B>, method, httpRequestParams, RequestType.OCCURRENCE);
+    return this.requestWithCache<R, B>(this.doCachedHttpRequest.bind(this), method, httpRequestParams, RequestType.OCCURRENCE);
   }
 
   /**
