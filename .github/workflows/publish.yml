@@ -1,0 +1,57 @@
+name: Publish
+run-name: Publish release {{ github.event.release.tag_name }} by {{ github.actor }}
+on:
+  release:
+    types:
+      - published
+jobs:
+  unit-tests:
+      strategy:
+        matrix:
+          node-version: ['14.x', '23.x']
+      name: Unit Tests
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: pnpm/action-setup@v4
+          name: Install pnpm
+          with:
+            version: 9
+            run_install: false
+        - name: Set up Node.js ${{ matrix.node-version }}
+          uses: actions/setup-node@v4
+          with:
+            node-version: ${{ matrix.node-version }}
+            cache: 'pnpm'
+        - name: Install dependencies
+          run: pnpm install
+        - name: Run tests
+          run: pnpm test
+  publish:
+    name: Publish
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+          run_install: false
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: install tsc
+        run: pnpm install -g typescript
+      - name: Build
+        run: pnpm build
+        uses: sergeysova/jq-action@v2
+        run: jq 'del(.scripts, .devDependencies)' package.json > publish.package.json && rm package.json && mv publish.package.json package.json
+      - name: Publish
+        run: npm publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
