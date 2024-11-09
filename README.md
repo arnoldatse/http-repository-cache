@@ -392,10 +392,10 @@ const repositoryCacheWithExpiration = new RepositoryCache(
 
 When the complete model objects are provided in list request responses, you don't need to call the individual get request directly to retrieve the complete model object, for example, to show its details. You can leverage the built-in cache system to find the item in the cached list response. If the item is not found because the list request has not been called yet, or the same item request has not been made, the request will be performed, the response will be cached for subsequent requests, and the response will be resolved.
 
-You can achieve this by using the [findByKeyOrRequestGet()](#findbykeyorrequestget) or [findOrRequestGet()](#findOrRequestGet) methods of the [RepositoryCache](#repositorycache) class.
+You can achieve this by using the `findByKeyOrRequestGet()` or `findOrRequestGet()` methods of the [RepositoryCache](#repositorycache) class.
 
-- use [findByKeyOrRequestGet()](#findbykeyorrequestget) when we are looking then item by another property than the id property provided in the [RepositoryCache](#repositorycache) constructor.
-- use [findOrRequestGet()](#findOrRequestGet) when we are looking for the item by the id property provided in the [RepositoryCache](#repositorycache) constructor.
+- use `findByKeyOrRequestGet()` when we are looking then item by another property than the id property provided in the [RepositoryCache](#repositorycache) constructor.
+- use `findOrRequestGet()` when we are looking for the item by the id property provided in the [RepositoryCache](#repositorycache) constructor.
 
 ```typescript
 import {
@@ -569,9 +569,9 @@ Suppose we have the following JSON response where our data is nested under two s
 
 In this example, the list of items is located under the response.data.items sub-properties.
 
-**Using [findByKeyOrRequestGetList](#findbykeyorrequestgetlist) and `findOrRequestGetList()`**
+**Using `findByKeyOrRequestGetList()` and `findOrRequestGetList()`**
 
-To find an item by key from the cache or request to get all and cache it, you can use the [findByKeyOrRequestGetList](#findbykeyorrequestgetlist) method with the `subPropertyResponseList` parameter:
+To find an item by key from the cache or request to get all and cache it, you can use the `findByKeyOrRequestGetList` method with the `subPropertyResponseList` parameter:
 
 ```typescript
 const fetchHttpRequest = new FetchHttpRequest();
@@ -1059,7 +1059,7 @@ git checkout -b feature-or-bugfix-name
 8. **Review Process**: Your pull request will be reviewed. They may request changes or provide feedback. Please be responsive to comments and make any necessary updates.
 9. **Merge**: Once your pull request is approved, it will be merged into the main branch.
 
-Thank you for your contributions! Your help is greatly appreciated in making `making http-repository-cache` better for everyone. 🙏🏿
+Thank you for your contributions! Your help is greatly appreciated in making `http-repository-cache` better for everyone. 🙏🏿
 
 # Creator
 
