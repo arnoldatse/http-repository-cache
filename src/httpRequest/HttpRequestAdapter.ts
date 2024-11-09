@@ -19,6 +19,7 @@ export interface HttpRequestParams<T = unknown, O = unknown> {
 export default interface HttpRequestAdapter<O = unknown> {
     /**
      * Builds the request header.
+     * This method should be used to build the headers of all requests types.
      * 
      * @param httpRequestParams - The parameters for the HTTP request.
      * @returns The request header.
