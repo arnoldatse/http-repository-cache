@@ -1,5 +1,5 @@
 name: Unit Tests
-run-name: Unit Tests on pull request {{ github.event.pull_request.title }} opened by {{ github.actor }}
+run-name: Unit Tests on pull request ${{ github.event.pull_request.title }} opened by @${{ github.actor }}
 on:
   pull_request:
     branches:

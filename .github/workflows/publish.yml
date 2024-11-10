@@ -1,5 +1,5 @@
 name: Publish
-run-name: Publish release {{ github.event.release.tag_name }} by {{ github.actor }}
+run-name: Publish release ${{ github.event.release.tag_name }} by @${{ github.actor }}
 on:
   release:
     types:
@@ -29,7 +29,8 @@ jobs:
         run: pnpm install -g typescript
       - name: Build
         run: pnpm build
-        uses: sergeysova/jq-action@v2
+      - uses: sergeysova/jq-action@v2
+        name: Remove scripts and devDependencies from package.json
         run: jq 'del(.scripts, .devDependencies)' package.json > publish.package.json && rm package.json && mv publish.package.json package.json
       - name: Publish
         run: npm publish
