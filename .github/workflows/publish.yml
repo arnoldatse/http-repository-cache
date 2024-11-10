@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
   publish:
     name: Publish
-    needs: call-unit-tests-workflow
+    needs: call-unit-tests-workflow.unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: pnpm build
       - uses: sergeysova/jq-action@v2
-        name: Remove scripts and devDependencies from package.json
+      - name: Remove scripts and devDependencies from package.json
         run: jq 'del(.scripts, .devDependencies)' package.json > publish.package.json && rm package.json && mv publish.package.json package.json
       - name: Publish
         run: npm publish
