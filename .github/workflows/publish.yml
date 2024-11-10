@@ -33,6 +33,6 @@ jobs:
       - name: Remove scripts and devDependencies from package.json
         run: jq 'del(.scripts, .devDependencies)' package.json > publish.package.json && rm package.json && mv publish.package.json package.json
       - name: Publish
-        run: npm publish
+        run: npm publish --provenance --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
