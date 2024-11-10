@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
   publish:
     name: Publish
-    needs: call-unit-tests-workflow.unit-tests
+    needs: call-unit-tests-workflow
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
