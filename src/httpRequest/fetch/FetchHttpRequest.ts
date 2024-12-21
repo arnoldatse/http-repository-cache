@@ -144,7 +144,7 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
    * @param body - Optional. The body of the HTTP response.
    * @throws {HttpException<T>} - Throws an HttpException with a type corresponding to the status code.
    */
-  private generateException = (status: number, body?: unknown): HttpException<T> => {
+  private generateException(status: number, body?: unknown): HttpException<T>{
     //if custom exception handling is set, use it
     if (this.customErrorStatusHandling) {
       const customHttpException = this.customErrorStatusHandling(status, body);
@@ -265,7 +265,7 @@ export default class FetchHttpRequest<T = unknown> implements HttpRequestAdapter
     return fetch(httpRequestParams.url, {
       method: httpMethod,
       headers: this.buildRequestHeader(httpRequestParams),
-      ...(!!httpRequestParams.body && { body: JSON.stringify(httpRequestParams.body) }),
+      ...(!!httpRequestParams.body && { body: httpRequestParams.contentTypeJSON === false ? (httpRequestParams.body as FormData) : JSON.stringify(httpRequestParams.body) }),
       ...(this._includeCredentials && { credentials: "include" }),
       ...httpRequestParams.options
     }).then(this.handleResponseCallback<R>(httpRequestParams.successStatusCodes ?? [])).catch(this.handleError);
