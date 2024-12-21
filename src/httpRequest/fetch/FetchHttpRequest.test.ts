@@ -186,7 +186,7 @@ describe('FetchHttpRequest', () => {
                 method: "GET",
                 headers: customHeaders
             });
-        })
+        });
 
         it("Should call fetch with request options", async () => {
             (globalThis.fetch as jest.Mock).mockResolvedValue({
@@ -873,6 +873,28 @@ describe('FetchHttpRequest', () => {
             expect(result).toEqual(response);
         });
 
+        it("Should call fetch with formData body and no headers \"Content-Type\": \"application/json\"", async () => {
+            const formData = new FormData();
+            formData.append("file", "file");
+
+            (globalThis.fetch as jest.Mock).mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: jest.fn().mockResolvedValue({}),
+            });
+
+            const fetchHttpRequest = new FetchHttpRequest();
+            // Act
+            await fetchHttpRequest.post({ url, body: formData, contentTypeJSON: false });
+
+            // Assert
+            expect(fetch).toHaveBeenCalledWith(url, {
+                method: "POST",
+                headers: {},
+                body: formData
+            });
+        });
+
         describe("Should reject HttpException", () => {
             describe("status 400", () => {
                 it("status 400 with body", async () => {
@@ -1432,6 +1454,28 @@ describe('FetchHttpRequest', () => {
             expect(result).toEqual(response);
         });
 
+        it("Should call fetch with formData body and no headers \"Content-Type\": \"application/json\"", async () => {
+            const formData = new FormData();
+            formData.append("file", "file");
+
+            (globalThis.fetch as jest.Mock).mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: jest.fn().mockResolvedValue({}),
+            });
+
+            const fetchHttpRequest = new FetchHttpRequest();
+            // Act
+            await fetchHttpRequest.patch({ url, body: formData, contentTypeJSON: false });
+
+            // Assert
+            expect(fetch).toHaveBeenCalledWith(url, {
+                method: "PATCH",
+                headers: {},
+                body: formData
+            });
+        });
+
         describe("Should reject HttpException", () => {
             describe("status 400", () => {
                 it("status 400 with body", async () => {
@@ -1989,6 +2033,28 @@ describe('FetchHttpRequest', () => {
 
             // Assert
             expect(result).toEqual(response);
+        });
+
+        it("Should call fetch with formData body and no headers \"Content-Type\": \"application/json\"", async () => {
+            const formData = new FormData();
+            formData.append("file", "file");
+
+            (globalThis.fetch as jest.Mock).mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: jest.fn().mockResolvedValue({}),
+            });
+
+            const fetchHttpRequest = new FetchHttpRequest();
+            // Act
+            await fetchHttpRequest.put({ url, body: formData, contentTypeJSON: false });
+
+            // Assert
+            expect(fetch).toHaveBeenCalledWith(url, {
+                method: "PUT",
+                headers: {},
+                body: formData
+            });
         });
 
         describe("Should reject HttpException", () => {

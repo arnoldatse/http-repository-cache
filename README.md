@@ -142,7 +142,7 @@ By using these methods, you can easily control whether credentials are included 
 
 The `Content-Type: application/json` header indicates that the body of the HTTP request is in JSON format. This header is important when sending data to the server, as it informs the server about the format of the data being sent.
 
-By default, the [FetchHttpRequest](#fetchhttprequest) class includes the `Content-Type: application/json` header in requests that have a body. However, you can control whether this header is included or not using the contentTypeJSON property in the `httpRequestParams` object.
+By default, the [FetchHttpRequest](#fetchhttprequest) class includes the `Content-Type: application/json` header in requests that have a body. However, you can control whether this header is included or not using the `contentTypeJSON` property in the `httpRequestParams` object. Also when you define `contentTypeJSON` to `false` the body of the request is no more stringified before sent, this is useful when you try to send a `FormData` as a body for instance.
 
 **Example: Including the Content-Type Header**
 
@@ -170,7 +170,9 @@ fetchHttpRequest.post({
 
 ```typescript
 const fetchHttpRequest = new FetchHttpRequest();
-const body = { lastName: "Doe", firstName: "John" };
+const body = new FormData();
+body.append("lastName", "Doe");
+body.append("firstName", "John");
 
 // Perform a POST request without the Content-Type: application/json header
 fetchHttpRequest.post({
@@ -344,7 +346,7 @@ By using the `setCustomErrorStatusHandling(customErrorStatusHandling: (status: n
 
 After configuring the main instance of `HttpRequest`, the [RepositoryCache](#repositorycache) class is the primary class used to perform requests from repositories. It provides various methods to leverage caching, ensuring efficient and optimized data retrieval.
 
-Behind the scenes, the [RepositoryCache](#repositorycache) class uses the provided `HttpRequest` implementation, such as [FetchHttpRequest]((#fetchhttprequest-api)), to perform requests. Therefore, to perform a request via [RepositoryCache](#repositorycache), you need to provide the `HttpMethod` to use and the `HttpRequestParams`.
+Behind the scenes, the [RepositoryCache](#repositorycache) class uses the provided `HttpRequest` implementation, such as [FetchHttpRequest](<(#fetchhttprequest-api)>), to perform requests. Therefore, to perform a request via [RepositoryCache](#repositorycache), you need to provide the `HttpMethod` to use and the `HttpRequestParams`.
 
 ### **Example: Performing Requests with RepositoryCache**
 
@@ -870,7 +872,7 @@ import {
   FetchHttpRequest,
   HttpMethod,
   RepositoryCache,
-  DefaultHttpExceptionType
+  DefaultHttpExceptionType,
 } from "http-repository-cache";
 
 const fetchHttpRequest = new FetchHttpRequest();
@@ -898,6 +900,7 @@ repositoryCache
     }
   });
 ```
+
 In this example, the `get()` method of the [RepositoryCache](#repositorycache) class is used to perform a GET request. If an exception occurs, the `catch` block intercepts the `HttpException` and handles it based on the type of the exception. The type is compared against the values of the `DefaultHttpExceptionType` enum to provide specific error handling logic.
 
 # **Create custom Http Request class**
@@ -914,89 +917,94 @@ The `HttpRequestAdapter` interface defines the methods that your custom HTTP req
  * @template O - request options type
  */
 export interface HttpRequestParams<T = unknown, O = unknown> {
-    url: string;
-    body?: T;
-    headers?: Record<string, string>;
-    successStatusCodes?: number[];
-    contentTypeJSON?: boolean;
-    options?: O;
+  url: string;
+  body?: T;
+  headers?: Record<string, string>;
+  successStatusCodes?: number[];
+  contentTypeJSON?: boolean;
+  options?: O;
 }
 
 /**
  * Interface representing an HTTP request adapter.
- * 
+ *
  * @template O - The type of the options parameter.
  */
 export default interface HttpRequestAdapter<O = unknown> {
-    /**
-     * Builds the request header.
-     * This method should be used to build the headers of all requests types
-     * 
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns The request header.
-     */
-    buildRequestHeader(httpRequestParams: HttpRequestParams<unknown, O>): Record<string, string>;
+  /**
+   * Builds the request header.
+   * This method should be used to build the headers of all requests types
+   *
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns The request header.
+   */
+  buildRequestHeader(
+    httpRequestParams: HttpRequestParams<unknown, O>
+  ): Record<string, string>;
 
-    /**
-     * Sends a GET request.
-     * 
-     * @template R - The type of the response.
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns A promise that resolves to the response.
-     */
-    get<R>(httpRequestParams: HttpRequestParams<never, O>): Promise<R>;
+  /**
+   * Sends a GET request.
+   *
+   * @template R - The type of the response.
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns A promise that resolves to the response.
+   */
+  get<R>(httpRequestParams: HttpRequestParams<never, O>): Promise<R>;
 
-    /**
-     * Sends a POST request.
-     * 
-     * @template R - The type of the response.
-     * @template B - The type of the request body.
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns A promise that resolves to the response.
-     */
-    post<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
+  /**
+   * Sends a POST request.
+   *
+   * @template R - The type of the response.
+   * @template B - The type of the request body.
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns A promise that resolves to the response.
+   */
+  post<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
 
-    /**
-     * Sends a PATCH request.
-     * 
-     * @template R - The type of the response.
-     * @template B - The type of the request body.
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns A promise that resolves to the response.
-     */
-    patch<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
+  /**
+   * Sends a PATCH request.
+   *
+   * @template R - The type of the response.
+   * @template B - The type of the request body.
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns A promise that resolves to the response.
+   */
+  patch<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
 
-    /**
-     * Sends a PUT request.
-     * 
-     * @template R - The type of the response.
-     * @template B - The type of the request body.
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns A promise that resolves to the response.
-     */
-    put<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
+  /**
+   * Sends a PUT request.
+   *
+   * @template R - The type of the response.
+   * @template B - The type of the request body.
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns A promise that resolves to the response.
+   */
+  put<R, B = unknown>(httpRequestParams: HttpRequestParams<B, O>): Promise<R>;
 
-    /**
-     * Sends a DELETE request.
-     * 
-     * @template R - The type of the response.
-     * @param httpRequestParams - The parameters for the HTTP request.
-     * @returns A promise that resolves to the response.
-     */
-    delete<R>(httpRequestParams: HttpRequestParams<never, O>): Promise<R>;
+  /**
+   * Sends a DELETE request.
+   *
+   * @template R - The type of the response.
+   * @param httpRequestParams - The parameters for the HTTP request.
+   * @returns A promise that resolves to the response.
+   */
+  delete<R>(httpRequestParams: HttpRequestParams<never, O>): Promise<R>;
 }
-
 ```
 
 Below is an example of an empty implementation of the HttpRequestAdapter interface. This implementation provides the structure for each method but does not include any actual logic.
 
 ```typescript
-import { HttpRequestAdapter, HttpRequestParams } from 'http-repository-cache';
+import { HttpRequestAdapter, HttpRequestParams } from "http-repository-cache";
 
-interface CustomHttpRequestOptions{}
+interface CustomHttpRequestOptions {}
 
-class CustomHttpRequest<CustomHttpRequestOptions> implements HttpRequestAdapter<CustomHttpRequestOptions> {
-  buildRequestHeader(httpRequestParams: HttpRequestParams<unknown, unknown>): Record<string, string> {
+class CustomHttpRequest<CustomHttpRequestOptions>
+  implements HttpRequestAdapter<CustomHttpRequestOptions>
+{
+  buildRequestHeader(
+    httpRequestParams: HttpRequestParams<unknown, unknown>
+  ): Record<string, string> {
     // Implement your logic to build request headers here
     return {};
   }
@@ -1006,17 +1014,23 @@ class CustomHttpRequest<CustomHttpRequestOptions> implements HttpRequestAdapter<
     return Promise.resolve({} as R);
   }
 
-  post<R, B = unknown>(httpRequestParams: HttpRequestParams<B, unknown>): Promise<R> {
+  post<R, B = unknown>(
+    httpRequestParams: HttpRequestParams<B, unknown>
+  ): Promise<R> {
     // Implement your logic to send a POST request here
     return Promise.resolve({} as R);
   }
 
-  patch<R, B = unknown>(httpRequestParams: HttpRequestParams<B, unknown>): Promise<R> {
+  patch<R, B = unknown>(
+    httpRequestParams: HttpRequestParams<B, unknown>
+  ): Promise<R> {
     // Implement your logic to send a PATCH request here
     return Promise.resolve({} as R);
   }
 
-  put<R, B = unknown>(httpRequestParams: HttpRequestParams<B, unknown>): Promise<R> {
+  put<R, B = unknown>(
+    httpRequestParams: HttpRequestParams<B, unknown>
+  ): Promise<R> {
     // Implement your logic to send a PUT request here
     return Promise.resolve({} as R);
   }
@@ -1034,24 +1048,30 @@ const customHttpRequest = new CustomHttpRequest();
 In this example, the `CustomHttpRequest` class implements the `HttpRequestAdapter` interface. Each method is defined but does not contain any actual logic. You can fill in the logic for each method based on your specific requirements. This structure ensures that the [RepositoryCache](#repositorycache) can use the `CustomHttpRequest` class to perform requests.
 
 # **Report Bug 🪳**
+
 If you encounter any issues or bugs while using the http-repository-cache library, please report them on the [Github repository issues board](https://github.com/arnoldatse/http-repository-cache/issues).
 
 Before submitting a new bug report, please verify that the issue has not already been reported. This helps us avoid duplicate reports and allows us to address issues more efficiently. Thank you for your cooperation!
 
-# **Contribute** 
+# **Contribute**
+
 I welcome contributions to the `http-repository-cache` library! If you would like to contribute, please follow these steps:
+
 1. **Fork the Repository**: Start by forking the repository to your GitHub account.
 2. **Clone the Repository**: Clone the forked repository to your local machine.
+
 ```
 git clone https://github.com/your-username/http-repository-cache.git
 cd http-repository-cache
 ```
+
 3. **Create a Branch**: Create a new branch for your feature or bug fix.
+
 ```
 git checkout -b feature-or-bugfix-name
 ```
-4. **Make Changes**: Make your changes to the codebase. Ensure that your code follows the project's coding standards and includes appropriate tests.
 
+4. **Make Changes**: Make your changes to the codebase. Ensure that your code follows the project's coding standards and includes appropriate tests.
 
 5. **Commit Changes**: Commit your changes with a descriptive commit message.
 6. **Push Changes**: Push your changes to your forked repository.
@@ -1064,6 +1084,7 @@ Thank you for your contributions! Your help is greatly appreciated in making `ht
 # Creator
 
 The `http-repository-cache` library was created and maintained by Arnold Atsé.
+
 - website: [arnoldatse.dev](https://arnoldatse.dev)
 - Github: [arnoldatse](https://github.com/arnoldatse)
 - email: [atse.arnold@gmail.com](mailto:atse.arnold@gmail.com)
